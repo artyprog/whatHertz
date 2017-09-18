@@ -1,0 +1,1 @@
+Goal: create a web-based game where the player must guess which musical pitch is heard

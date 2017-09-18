@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>What Hertz?</title>
+		<meta charset="utf-8" />
+	</head>
+	<body>
+		<h1>What Hertz?</h1>
+
+		<h5 id="last-score"></h5>
+
+		<div id="round-content" style="display: none">
+
+			<h3 id="question"></h3>
+
+			<button class="response-btn" data-response="A">A</button>
+			<button class="response-btn" data-response="Bb">Bb</button>
+			<button class="response-btn" data-response="B">B</button>
+			<button class="response-btn" data-response="C">C</button>
+			<button class="response-btn" data-response="C#">C#</button>
+			<button class="response-btn" data-response="D">D</button>
+			<button class="response-btn" data-response="Eb">Eb</button>
+			<button class="response-btn" data-response="E">E</button>
+			<button class="response-btn" data-response="F">F</button>
+			<button class="response-btn" data-response="F#">F#</button>
+			<button class="response-btn" data-response="G">G</button>
+			<button class="response-btn" data-response="G#">G#</button>
+
+			<hr />
+			Correct: <span id="num-correct"></span> - Incorrect: <span id="num-incorrect"></span>
+
+			<hr />
+
+		</div>
+
+		<button id="start-round-btn">Start Round</button>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.0.4/howler.min.js"></script>
+
+		<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+		<script src="app.js" type="text/babel"></script>
+	</body>
+</html>

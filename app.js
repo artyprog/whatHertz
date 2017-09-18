@@ -103,7 +103,7 @@
 			// or boohiss.wav
 			// or boos3.wav
 		}
-		var url = 'http://erikvorkink.com/temp/audio/' + sound;
+		var url = 'audio/' + sound;
 		playURL(url);
 	}
 
@@ -132,14 +132,13 @@
 
 	function playURL(url) {
 		var sound = new Howl({
-			src: [url],
-			html5: true // to bypass CORS for now
+			src: [url]
 		});
 		sound.play();
 	}
 
 	function playQuestion(pitch) {
-		var url = 'http://erikvorkink.com/temp/audio/' + pitch.audio;
+		var url = 'audio/' + pitch.audio;
 		playURL(url);
 	}
 

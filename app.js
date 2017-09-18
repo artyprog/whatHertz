@@ -1,20 +1,40 @@
 (function(){
 	'use strict';
 
-	const PITCHES = [
-		{ name: 'A', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68437__pinkyfinger__piano-a.wav' },
-		{ name: 'Bb', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68439__pinkyfinger__piano-bb.wav' },
-		{ name: 'B', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68438__pinkyfinger__piano-b.wav' },
-		{ name: 'C', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68441__pinkyfinger__piano-c.wav' },
-		{ name: 'C#', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68440__pinkyfinger__piano-c.wav' },
-		{ name: 'D', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68442__pinkyfinger__piano-d.wav' },
-		{ name: 'Eb', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68444__pinkyfinger__piano-eb.wav' },
-		{ name: 'E', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68443__pinkyfinger__piano-e.wav' },
-		{ name: 'F', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68446__pinkyfinger__piano-f.wav' },
-		{ name: 'F#', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68445__pinkyfinger__piano-f.wav' },
-		{ name: 'G', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68447__pinkyfinger__piano-g.wav' },
-		{ name: 'G#', audio: 'freesound.org/4409__pinkyfinger__piano-notes-1-octave/68448__pinkyfinger__piano-g.wav' }
-	];
+	const AUDIO_SAMPLES = {
+		pitches: [
+			{ note: 'A', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68437__pinkyfinger__piano-a.wav' },
+			{ note: 'Bb', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68439__pinkyfinger__piano-bb.wav' },
+			{ note: 'B', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68438__pinkyfinger__piano-b.wav' },
+			{ note: 'C', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68441__pinkyfinger__piano-c.wav' },
+			{ note: 'C#', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68440__pinkyfinger__piano-c.wav' },
+			{ note: 'D', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68442__pinkyfinger__piano-d.wav' },
+			{ note: 'Eb', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68444__pinkyfinger__piano-eb.wav' },
+			{ note: 'E', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68443__pinkyfinger__piano-e.wav' },
+			{ note: 'F', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68446__pinkyfinger__piano-f.wav' },
+			{ note: 'F#', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68445__pinkyfinger__piano-f.wav' },
+			{ note: 'G', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68447__pinkyfinger__piano-g.wav' },
+			{ note: 'G#', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68448__pinkyfinger__piano-g.wav' }
+		],
+		reactions: {
+			cheering: [
+				{ url: 'audio/freesoundeffects.com/cheer.wav' }
+			],
+			applause: [
+				{ url: 'audio/freesoundeffects.com/applause3.wav' },
+				{ url: 'audio/freesoundeffects.com/applause7.wav' }
+			],
+			meh: [
+				{ url: 'audio/freesoundeffects.com/applause8.wav' },
+				{ url: 'audio/freesoundeffects.com/applause10.wav' }
+			],
+			booing: [
+				{ url: 'audio/freesoundeffects.com/boohiss.wav' },
+				{ url: 'audio/freesoundeffects.com/boo3.wav' },
+				{ url: 'audio/freesoundeffects.com/boos3.wav' }
+			]
+		}
+	};
 
 	const PITCHES_PER_ROUND = 5;
 
@@ -31,7 +51,7 @@
 
 		// Choose random pitches to be used for this round
 		while (roundState.pitches.length < PITCHES_PER_ROUND) {
-			let pitch = PITCHES[Math.floor(Math.random() * PITCHES.length)];
+			let pitch = AUDIO_SAMPLES.pitches[Math.floor(Math.random() * AUDIO_SAMPLES.pitches.length)];
 			if (roundState.pitches.indexOf(pitch) === -1) {
 				roundState.pitches.push(pitch);
 			}
@@ -55,9 +75,9 @@
 
 	let askQuestion = (pitch) => {
 		let num = roundState.responses.length + 1;
-		document.getElementById('question').innerHTML = `Question ${num}: Can you click ${pitch.name}?`;
+		document.getElementById('question').innerHTML = `Question ${num}: Can you click ${pitch.note}?`;
 		roundState.currentPitch = pitch;
-		playQuestion(pitch);
+		playURL(pitch.url);
 	};
 
 	let evalAnswer = (answer) => {
@@ -66,7 +86,7 @@
 			return;
 		}
 		roundState.responses.push(answer);
-		if (answer == roundState.currentPitch.name) {
+		if (answer == roundState.currentPitch.note) {
 			roundState.numCorrect++;
 		} else {
 			roundState.numIncorrect++;
@@ -84,27 +104,28 @@
 	};
 
 	let finishRound = () => {
-		document.getElementById('last-score').innerHTML = `Your score is ${roundState.numCorrect} / roundState.pitches.length`;
+		document.getElementById('last-score').innerHTML = `Your score is ${roundState.numCorrect} / ${roundState.pitches.length}`;
 		document.getElementById('round-content').style.display = 'none';
 
 		let percentCorrect = (roundState.numCorrect / roundState.pitches.length) * 100;
 
-		let sound;
+		let reaction = chooseReaction(percentCorrect);
+		playURL(reaction.url);
+	};
+
+	let chooseReaction = (percentCorrect) => {
+		let reactionBucket;
 		if (percentCorrect === 100) {
-			sound = 'freesoundeffects.com/cheer.wav';
+			reactionBucket = AUDIO_SAMPLES.reactions.cheering;
 		} else if (percentCorrect >= 70) {
-			sound = 'freesoundeffects.com/applause3.wav';
-			// or applause7.wav'
+			reactionBucket = AUDIO_SAMPLES.reactions.applause;
 		} else if (percentCorrect >= 50) {
-			sound = 'freesoundeffects.com/applause8.wav';
-			// or applause10.wav
+			reactionBucket = AUDIO_SAMPLES.reactions.meh;
 		} else {
-			sound = 'freesoundeffects.com/boo3.wav';
-			// or boohiss.wav
-			// or boos3.wav
+			reactionBucket = AUDIO_SAMPLES.reactions.booing;
 		}
-		let url = 'audio/' + sound;
-		playURL(url);
+		// Choose random within the chosen bucket
+		return reactionBucket[Math.floor(Math.random() * reactionBucket.length)];
 	};
 
 	let initClickHandlers = () => {
@@ -135,11 +156,6 @@
 			src: [url]
 		});
 		sound.play();
-	};
-
-	let playQuestion = (pitch) => {
-		let url = 'audio/' + pitch.audio;
-		playURL(url);
 	};
 
 	initClickHandlers();

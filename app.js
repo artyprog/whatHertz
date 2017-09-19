@@ -104,7 +104,7 @@ app({
 
 				<h3>{state.currentRound.currentQuestion}</h3>
 
-				<KeyboardWidget handler={actions.handleResponse} />
+				<KeyboardWidget clickHandler={actions.handleResponse} />
 
 				<hr />
 

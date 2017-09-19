@@ -62,6 +62,9 @@ let playURL = (url) => {
 	sound.play()
 }
 
+const ResponseButtonWidget = ({ note, update }) =>
+	<button onclick={update}>{note}</button>
+
 app({
 	state: {
 		previousScore: null,
@@ -87,18 +90,18 @@ app({
 
 				<h3>{state.currentRound.currentQuestion}</h3>
 
-				<button onclick={e => actions.handleResponse('A')}>A</button>
-				<button onclick={e => actions.handleResponse('Bb')}>Bb</button>
-				<button onclick={e => actions.handleResponse('B')}>B</button>
-				<button onclick={e => actions.handleResponse('C')}>C</button>
-				<button onclick={e => actions.handleResponse('C#')}>C#</button>
-				<button onclick={e => actions.handleResponse('D')}>D</button>
-				<button onclick={e => actions.handleResponse('Eb')}>Eb</button>
-				<button onclick={e => actions.handleResponse('E')}>E</button>
-				<button onclick={e => actions.handleResponse('F')}>F</button>
-				<button onclick={e => actions.handleResponse('F#')}>F#</button>
-				<button onclick={e => actions.handleResponse('G')}>G</button>
-				<button onclick={e => actions.handleResponse('G#')}>G#</button>
+				<ResponseButtonWidget note="A" update={e => actions.handleResponse('A')} />
+				<ResponseButtonWidget note="Bb" update={e => actions.handleResponse('Bb')} />
+				<ResponseButtonWidget note="B" update={e => actions.handleResponse('B')} />
+				<ResponseButtonWidget note="C" update={e => actions.handleResponse('C')} />
+				<ResponseButtonWidget note="C#" update={e => actions.handleResponse('C#')} />
+				<ResponseButtonWidget note="D" update={e => actions.handleResponse('D')} />
+				<ResponseButtonWidget note="Eb" update={e => actions.handleResponse('Eb')} />
+				<ResponseButtonWidget note="E" update={e => actions.handleResponse('E')} />
+				<ResponseButtonWidget note="F" update={e => actions.handleResponse('F')} />
+				<ResponseButtonWidget note="F#" update={e => actions.handleResponse('F#')} />
+				<ResponseButtonWidget note="G" update={e => actions.handleResponse('G')} />
+				<ResponseButtonWidget note="G#" update={e => actions.handleResponse('G#')} />
 
 				<hr />
 				Correct: {state.currentRound.numCorrect} - Incorrect: {state.currentRound.numIncorrect}

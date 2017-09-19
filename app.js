@@ -63,22 +63,22 @@ let playURL = (url) => {
 }
 
 const KeyboardWidget = ({ clickHandler }) =>
-	<svg xmlSpace="preserve" width="161px" height="120">
+	<svg xmlSpace="preserve" width="322px" height="240">
 		{/* White keys */}
-		<rect style={{ fill: 'white', stroke: 'black' }} x="0" y="0" width="23" height="120" onclick={e => clickHandler('C')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="23" y="0" width="23" height="120" onclick={e => clickHandler('D')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="46" y="0" width="23" height="120" onclick={e => clickHandler('E')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="69" y="0" width="23" height="120" onclick={e => clickHandler('F')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="92" y="0" width="23" height="120" onclick={e => clickHandler('G')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="115" y="0" width="23" height="120" onclick={e => clickHandler('A')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="138" y="0" width="23" height="120" onclick={e => clickHandler('B')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="0" y="0" width="46" height="240" onclick={e => clickHandler('C')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="46" y="0" width="46" height="240" onclick={e => clickHandler('D')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="92" y="0" width="46" height="240" onclick={e => clickHandler('E')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="138" y="0" width="46" height="240" onclick={e => clickHandler('F')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="184" y="0" width="46" height="240" onclick={e => clickHandler('G')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="230" y="0" width="46" height="240" onclick={e => clickHandler('A')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="276" y="0" width="46" height="240" onclick={e => clickHandler('B')} />
 
 		{/* Black keys */}
-		<rect style={{ fill: 'black', stroke: 'black' }} x="14.33333" y="0" width="13" height="80" onclick={e => clickHandler('C#')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="41.66666" y="0" width="13" height="80" onclick={e => clickHandler('Eb')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="82.25" y="0" width="13" height="80" onclick={e => clickHandler('F#')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="108.25" y="0" width="13" height="80" onclick={e => clickHandler('G#')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="134.75" y="0" width="13" height="80" onclick={e => clickHandler('Bb')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="28.66666" y="0" width="26" height="160" onclick={e => clickHandler('C#')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="83.33332" y="0" width="26" height="160" onclick={e => clickHandler('Eb')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="164.5" y="0" width="26" height="160" onclick={e => clickHandler('F#')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="216.5" y="0" width="26" height="160" onclick={e => clickHandler('G#')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="269.5" y="0" width="26" height="160" onclick={e => clickHandler('Bb')} />
 	</svg>
 
 app({
@@ -103,6 +103,8 @@ app({
 			<div style={{ display: state.currentRound.currentPitch ? 'block' : 'none' }}>
 
 				<h3>{state.currentRound.currentQuestion}</h3>
+
+				<button onclick={actions.playCurrentPitch}>Repeat Note</button>
 
 				<KeyboardWidget clickHandler={actions.handleResponse} />
 
@@ -151,7 +153,7 @@ app({
 				let num = state.currentRound.responses.length + 1
 				state.currentRound.currentPitch = nextPitch
 				state.currentRound.currentQuestion = `Question ${num}: Can you click ${nextPitch.note}?`
-				playURL(nextPitch.url);
+				actions.playCurrentPitch()
 				return state
 			}
 
@@ -167,6 +169,10 @@ app({
 
 			actions.resetRound()
 			return state
+		},
+
+		playCurrentPitch: (state) => {
+			playURL(state.currentRound.currentPitch.url)
 		},
 
 		handleResponse: (state, actions, note) => {

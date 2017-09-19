@@ -62,8 +62,24 @@ let playURL = (url) => {
 	sound.play()
 }
 
-const ResponseButtonWidget = ({ note, update }) =>
-	<button onclick={update}>{note}</button>
+const KeyboardWidget = ({ clickHandler }) =>
+	<svg xmlSpace="preserve" width="161px" height="120">
+		{/* White keys */}
+		<rect style={{ fill: 'white', stroke: 'black' }} x="0" y="0" width="23" height="120" onclick={e => clickHandler('C')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="23" y="0" width="23" height="120" onclick={e => clickHandler('D')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="46" y="0" width="23" height="120" onclick={e => clickHandler('E')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="69" y="0" width="23" height="120" onclick={e => clickHandler('F')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="92" y="0" width="23" height="120" onclick={e => clickHandler('G')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="115" y="0" width="23" height="120" onclick={e => clickHandler('A')} />
+		<rect style={{ fill: 'white', stroke: 'black' }} x="138" y="0" width="23" height="120" onclick={e => clickHandler('B')} />
+
+		{/* Black keys */}
+		<rect style={{ fill: 'black', stroke: 'black' }} x="14.33333" y="0" width="13" height="80" onclick={e => clickHandler('C#')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="41.66666" y="0" width="13" height="80" onclick={e => clickHandler('Eb')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="82.25" y="0" width="13" height="80" onclick={e => clickHandler('F#')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="108.25" y="0" width="13" height="80" onclick={e => clickHandler('G#')} />
+		<rect style={{ fill: 'black', stroke: 'black' }} x="134.75" y="0" width="13" height="80" onclick={e => clickHandler('Bb')} />
+	</svg>
 
 app({
 	state: {
@@ -84,26 +100,14 @@ app({
 				{state.previousScore}
 			</h5>
 
-			<div style={{
-					display: state.currentRound.currentPitch ? 'block' : 'none'
-				}}>
+			<div style={{ display: state.currentRound.currentPitch ? 'block' : 'none' }}>
 
 				<h3>{state.currentRound.currentQuestion}</h3>
 
-				<ResponseButtonWidget note="A" update={e => actions.handleResponse('A')} />
-				<ResponseButtonWidget note="Bb" update={e => actions.handleResponse('Bb')} />
-				<ResponseButtonWidget note="B" update={e => actions.handleResponse('B')} />
-				<ResponseButtonWidget note="C" update={e => actions.handleResponse('C')} />
-				<ResponseButtonWidget note="C#" update={e => actions.handleResponse('C#')} />
-				<ResponseButtonWidget note="D" update={e => actions.handleResponse('D')} />
-				<ResponseButtonWidget note="Eb" update={e => actions.handleResponse('Eb')} />
-				<ResponseButtonWidget note="E" update={e => actions.handleResponse('E')} />
-				<ResponseButtonWidget note="F" update={e => actions.handleResponse('F')} />
-				<ResponseButtonWidget note="F#" update={e => actions.handleResponse('F#')} />
-				<ResponseButtonWidget note="G" update={e => actions.handleResponse('G')} />
-				<ResponseButtonWidget note="G#" update={e => actions.handleResponse('G#')} />
+				<KeyboardWidget handler={actions.handleResponse} />
 
 				<hr />
+
 				Correct: {state.currentRound.numCorrect} - Incorrect: {state.currentRound.numIncorrect}
 
 				<hr />

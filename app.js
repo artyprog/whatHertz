@@ -52,22 +52,21 @@ const SPRITE_PLAYER = new Howl({
 })
 
 const REACTION_SAMPLES = {
-	// TODO: normalize volume and convert to MP3
 	cheering: [
-		{ url: 'audio/freesoundeffects.com/cheer.wav' }
+		{ url: 'audio/freesoundeffects.com/cheer.mp3' }
 	],
 	applause: [
-		{ url: 'audio/freesoundeffects.com/applause3.wav' },
-		{ url: 'audio/freesoundeffects.com/applause7.wav' }
+		{ url: 'audio/freesoundeffects.com/applause3.mp3' },
+		{ url: 'audio/freesoundeffects.com/applause7.mp3' }
 	],
 	meh: [
-		{ url: 'audio/freesoundeffects.com/applause8.wav' },
-		{ url: 'audio/freesoundeffects.com/applause10.wav' }
+		{ url: 'audio/freesoundeffects.com/applause8.mp3' },
+		{ url: 'audio/freesoundeffects.com/applause10.mp3' }
 	],
 	booing: [
-		{ url: 'audio/freesoundeffects.com/boohiss.wav' },
-		{ url: 'audio/freesoundeffects.com/boo3.wav' },
-		{ url: 'audio/freesoundeffects.com/boos3.wav' }
+		{ url: 'audio/freesoundeffects.com/boohiss.mp3' },
+		{ url: 'audio/freesoundeffects.com/boo3.mp3' },
+		{ url: 'audio/freesoundeffects.com/boos3.mp3' }
 	]
 }
 

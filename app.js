@@ -55,7 +55,6 @@ const AUDIO_SPRITES = {
 	}
 }
 
-// Cheers, etc. to be played at the end of a round
 const REACTION_SAMPLES = {
 	cheering: [
 		{ url: 'audio/freesoundeffects.com/cheer.mp3' }
@@ -72,6 +71,12 @@ const REACTION_SAMPLES = {
 		{ url: 'audio/freesoundeffects.com/boohiss.mp3' },
 		{ url: 'audio/freesoundeffects.com/boo3.mp3' },
 		{ url: 'audio/freesoundeffects.com/boos3.mp3' }
+	],
+	correct: [
+		{ url: 'audio/freesound.org/66136__theta4__ding30603-spedup.mp3' }
+	],
+	incorrect: [
+		{ url: 'audio/freesound.org/21871__nofeedbak__sarahbuzzer.mp3' }
 	]
 }
 
@@ -86,7 +91,7 @@ let loadAudioSprite = (sprite) => {
 }
 
 // Choose a reaction sample based on the % of questions answered correctly
-let chooseReactionSample = (percentCorrect) => {
+let chooseRoundReactionSample = (percentCorrect) => {
 	let category
 	if (percentCorrect === 100) {
 		category = REACTION_SAMPLES.cheering
@@ -252,7 +257,7 @@ app({
 			state.previousScore = `Your score is ${state.activeRound.numCorrect} / ${state.activeRound.pitches.length}`
 
 			let percentCorrect = (state.activeRound.numCorrect / state.activeRound.pitches.length) * 100
-			let reaction = chooseReactionSample(percentCorrect)
+			let reaction = chooseRoundReactionSample(percentCorrect)
 			reaction && playReaction(reaction)
 
 			state.hasActiveRound = false
@@ -270,12 +275,26 @@ app({
 		// indicate their answer
 		handleResponse: (state, actions, responsePitch) => {
 			state.activeRound.responses.push(responsePitch)
+
+			let reaction
 			if (responsePitch == state.activeRound.currentPitch) {
+				console.log('CORRECT')
+				reaction = REACTION_SAMPLES['correct'][0]
 				state.activeRound.numCorrect++
 			} else {
+				console.log('INCORRECT')
+				reaction = REACTION_SAMPLES['incorrect'][0]
 				state.activeRound.numIncorrect++
 			}
+			reaction && playReaction(reaction)
+
+			// Wait a bit for the user to process whether their answer
+			// was correct or not before moving on.
+      		return update => {
+      			setTimeout(() => {
 			return actions.advance(state)
+      			}, 1500)
+      		}
 		}
 	}
 })

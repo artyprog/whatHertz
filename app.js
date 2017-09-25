@@ -3,58 +3,101 @@
 const { h, app } = hyperapp
 /** @jsx h */
 
-const AUDIO_SAMPLES = {
-	pitches: [
-		{ note: 'A', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68437__pinkyfinger__piano-a.wav' },
-		{ note: 'Bb', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68439__pinkyfinger__piano-bb.wav' },
-		{ note: 'B', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68438__pinkyfinger__piano-b.wav' },
-		{ note: 'C', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68441__pinkyfinger__piano-c.wav' },
-		{ note: 'C#', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68440__pinkyfinger__piano-c.wav' },
-		{ note: 'D', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68442__pinkyfinger__piano-d.wav' },
-		{ note: 'Eb', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68444__pinkyfinger__piano-eb.wav' },
-		{ note: 'E', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68443__pinkyfinger__piano-e.wav' },
-		{ note: 'F', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68446__pinkyfinger__piano-f.wav' },
-		{ note: 'F#', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68445__pinkyfinger__piano-f.wav' },
-		{ note: 'G', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68447__pinkyfinger__piano-g.wav' },
-		{ note: 'G#', url: 'audio/freesound.org/4409__pinkyfinger__piano-notes-1-octave/68448__pinkyfinger__piano-g.wav' }
-	],
-	reactions: {
-		cheering: [
-			{ url: 'audio/freesoundeffects.com/cheer.wav' }
-		],
-		applause: [
-			{ url: 'audio/freesoundeffects.com/applause3.wav' },
-			{ url: 'audio/freesoundeffects.com/applause7.wav' }
-		],
-		meh: [
-			{ url: 'audio/freesoundeffects.com/applause8.wav' },
-			{ url: 'audio/freesoundeffects.com/applause10.wav' }
-		],
-		booing: [
-			{ url: 'audio/freesoundeffects.com/boohiss.wav' },
-			{ url: 'audio/freesoundeffects.com/boo3.wav' },
-			{ url: 'audio/freesoundeffects.com/boos3.wav' }
-		]
-	}
-};
+// Options shown on the keyboard and chosen within a round.
+// Must match the keys in AUDIO_SPRITES.x.sprite.
+const PITCHES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B']
 
-const PITCHES_PER_ROUND = 5;
+const PITCHES_PER_ROUND = 5
 
-let chooseReaction = (percentCorrect) => {
-	let reactionBucket;
-	if (percentCorrect === 100) {
-		reactionBucket = AUDIO_SAMPLES.reactions.cheering
-	} else if (percentCorrect >= 70) {
-		reactionBucket = AUDIO_SAMPLES.reactions.applause
-	} else if (percentCorrect >= 50) {
-		reactionBucket = AUDIO_SAMPLES.reactions.meh
-	} else {
-		reactionBucket = AUDIO_SAMPLES.reactions.booing
-	}
-	// Choose random within the chosen bucket
-	return reactionBucket[Math.floor(Math.random() * reactionBucket.length)]
+// For now all sprites have identical length/timing.
+const STANDARD_AUDIO_SPRITE = {
+	'C': [0, 3500],
+	'C#': [4000, 3500],
+	'D': [8000, 3500],
+	'Eb': [12000, 3500],
+	'E': [16000, 3500],
+	'F': [20000, 3500],
+	'F#': [24000, 3500],
+	'G': [28000, 3500],
+	'G#': [32000, 3500],
+	'A': [36000, 3500],
+	'Bb': [40000, 3500],
+	'B': [44000, 3500]
 }
 
+// Played using the Howler audio library
+const AUDIO_SPRITES = {
+	'epiano': {
+		url: 'audio/sprites/epiano.mp3',
+		sprite: STANDARD_AUDIO_SPRITE,
+	},
+	'piano': {
+		url: 'audio/sprites/piano.mp3',
+		sprite: STANDARD_AUDIO_SPRITE,
+	},
+	'bells': {
+		url: 'audio/sprites/synth-bells.mp3',
+		sprite: STANDARD_AUDIO_SPRITE,
+	},
+	'strings': {
+		url: 'audio/sprites/synth-strings.mp3',
+		sprite: STANDARD_AUDIO_SPRITE
+	}
+}
+
+const SPRITE_PLAYER = new Howl({
+	// TODO: set this during the game
+	src: [AUDIO_SPRITES['epiano'].url],
+	sprite: AUDIO_SPRITES['epiano'].sprite
+})
+
+const REACTION_SAMPLES = {
+	// TODO: normalize volume and convert to MP3
+	cheering: [
+		{ url: 'audio/freesoundeffects.com/cheer.wav' }
+	],
+	applause: [
+		{ url: 'audio/freesoundeffects.com/applause3.wav' },
+		{ url: 'audio/freesoundeffects.com/applause7.wav' }
+	],
+	meh: [
+		{ url: 'audio/freesoundeffects.com/applause8.wav' },
+		{ url: 'audio/freesoundeffects.com/applause10.wav' }
+	],
+	booing: [
+		{ url: 'audio/freesoundeffects.com/boohiss.wav' },
+		{ url: 'audio/freesoundeffects.com/boo3.wav' },
+		{ url: 'audio/freesoundeffects.com/boos3.wav' }
+	]
+}
+
+// Choose a reaction sample based on the % of questions answered correctly
+let chooseReactionSample = (percentCorrect) => {
+	let category;
+	if (percentCorrect === 100) {
+		category = REACTION_SAMPLES.cheering
+	} else if (percentCorrect >= 70) {
+		category = REACTION_SAMPLES.applause
+	} else if (percentCorrect >= 50) {
+		category = REACTION_SAMPLES.meh
+	} else {
+		category = REACTION_SAMPLES.booing
+	}
+	// Choose random within the chosen category
+	return (category.length > 0) ? category[Math.floor(Math.random() * category.length)] : null
+}
+
+// Play one of the pitches loaded up in the sprite player
+let playPitch = (pitch) => {
+	SPRITE_PLAYER.play(pitch);
+}
+
+// Play a given reaction sample
+let playReaction = (reactionSample) => {
+	playURL(reactionSample.url)
+}
+
+// Play an arbitrary audio file
 let playURL = (url) => {
 	let sound = new Howl({
 		src: [url]
@@ -119,6 +162,7 @@ app({
 			<button onclick={actions.startRound}>{state.currentRound.currentPitch ? 'Reset' : 'Start'} Round</button>
 		</main>,
 	actions: {
+		// Create a clean state
 		resetRound: (state) => {
 			state.currentRound = {
 				currentQuestion: null,
@@ -132,13 +176,14 @@ app({
 			return state
 		},
 
+		// Choose questions and ask the first one
 		startRound: (state, actions) => {
 			state.previousScore = null
 			actions.resetRound()
 
 			// Choose random pitches to be used for this round
 			while (state.currentRound.pitches.length < PITCHES_PER_ROUND) {
-				let pitch = AUDIO_SAMPLES.pitches[Math.floor(Math.random() * AUDIO_SAMPLES.pitches.length)]
+				let pitch = PITCHES[Math.floor(Math.random() * PITCHES.length)]
 				if (state.currentRound.pitches.indexOf(pitch) === -1) {
 					state.currentRound.pitches.push(pitch)
 				}
@@ -147,12 +192,13 @@ app({
 			actions.advance(state)
 		},
 
+		// Ask the next question
 		advance: (state, actions) => {
 			let nextPitch = state.currentRound.pitches[state.currentRound.responses.length]
 			if (nextPitch) {
 				let num = state.currentRound.responses.length + 1
 				state.currentRound.currentPitch = nextPitch
-				state.currentRound.currentQuestion = `Question ${num}: Can you click ${nextPitch.note}?`
+				state.currentRound.currentQuestion = `Question ${num}: Can you click ${nextPitch}?`
 				actions.playCurrentPitch()
 				return state
 			}
@@ -160,24 +206,30 @@ app({
 			return actions.endRound(state)
 		},
 
+		// Finish up the round
 		endRound: (state, actions) => {
 			state.previousScore = `Your score is ${state.currentRound.numCorrect} / ${state.currentRound.pitches.length}`
 
 			let percentCorrect = (state.currentRound.numCorrect / state.currentRound.pitches.length) * 100
-			let reaction = chooseReaction(percentCorrect)
-			playURL(reaction.url)
+			let reaction = chooseReactionSample(percentCorrect)
+			reaction && playReaction(reaction)
 
 			actions.resetRound()
 			return state
 		},
 
+		// Play the pitch of the current question
 		playCurrentPitch: (state) => {
-			playURL(state.currentRound.currentPitch.url)
+			if (state.currentRound.currentPitch) {
+				playPitch(state.currentRound.currentPitch)
+			}
 		},
 
-		handleResponse: (state, actions, note) => {
-			state.currentRound.responses.push(note);
-			if (note == state.currentRound.currentPitch.note) {
+		// Called when the user presses a note on the keyboard to
+		// indicate their answer
+		handleResponse: (state, actions, responsePitch) => {
+			state.currentRound.responses.push(responsePitch);
+			if (responsePitch == state.currentRound.currentPitch) {
 				state.currentRound.numCorrect++;
 			} else {
 				state.currentRound.numIncorrect++;

@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 const { h, app } = hyperapp
 /** @jsx h */
@@ -9,7 +9,7 @@ const PITCHES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B'
 
 const PITCHES_PER_ROUND = 5
 
-// For now all sprites have identical length/timing.
+// For now all sprites have identical length/timing
 const STANDARD_AUDIO_SPRITE = {
 	'C': [0, 3500],
 	'C#': [4000, 3500],
@@ -45,12 +45,6 @@ const AUDIO_SPRITES = {
 	}
 }
 
-const SPRITE_PLAYER = new Howl({
-	// TODO: set this during the game
-	src: [AUDIO_SPRITES['epiano'].url],
-	sprite: AUDIO_SPRITES['epiano'].sprite
-})
-
 const REACTION_SAMPLES = {
 	cheering: [
 		{ url: 'audio/freesoundeffects.com/cheer.mp3' }
@@ -70,9 +64,19 @@ const REACTION_SAMPLES = {
 	]
 }
 
+let spritePlayer = null
+
+// Load the give audio sprite into the sprite player
+let loadAudioSprite = (sprite) => {
+	spritePlayer = new Howl({
+		src: [sprite.url],
+		sprite: sprite.sprite
+	})
+}
+
 // Choose a reaction sample based on the % of questions answered correctly
 let chooseReactionSample = (percentCorrect) => {
-	let category;
+	let category
 	if (percentCorrect === 100) {
 		category = REACTION_SAMPLES.cheering
 	} else if (percentCorrect >= 70) {
@@ -88,7 +92,13 @@ let chooseReactionSample = (percentCorrect) => {
 
 // Play one of the pitches loaded up in the sprite player
 let playPitch = (pitch) => {
-	SPRITE_PLAYER.play(pitch);
+	if (!spritePlayer) throw 'Invalid sprite player'
+	spritePlayer.play(pitch)
+}
+
+// Play multiple pitches at once
+let playChord = (pitches) => {
+	pitches.forEach(pitch => playPitch(pitch))
 }
 
 // Play a given reaction sample
@@ -103,6 +113,9 @@ let playURL = (url) => {
 	})
 	sound.play()
 }
+
+const InstrumentButtonWidget = ({ name, label, clickHandler }) =>
+	<button onclick={e => clickHandler(name)}>{label}</button>
 
 const KeyboardWidget = ({ clickHandler }) =>
 	<svg xmlSpace="preserve" width="322px" height="240">
@@ -125,16 +138,27 @@ const KeyboardWidget = ({ clickHandler }) =>
 
 app({
 	state: {
+		instrument: 'epiano',
 		previousScore: null,
-		currentRound: {
+		activeRound: {
 			question: null,
 			numCorrect: 0,
 			numIncorrect: 0
-		}
+		},
+		hasActiveRound: false
 	},
 	view: (state, actions) =>
 		<main>
 			<h1>What Hertz?</h1>
+
+			<div style={{ display: state.hasActiveRound ? 'none' : 'block' }}>
+				<hr />
+				<InstrumentButtonWidget name="epiano" label="Electric Piano" clickHandler={actions.setInstrument} />
+				<InstrumentButtonWidget name="piano" label="Piano" clickHandler={actions.setInstrument} />
+				<InstrumentButtonWidget name="bells" label="Syth Bells" clickHandler={actions.setInstrument} />
+				<InstrumentButtonWidget name="strings" label="Synth Strings" clickHandler={actions.setInstrument} />
+				<hr />
+			</div>
 
 			<h5 style={{
 				display: state.previousScore ? 'block' : 'none'
@@ -142,9 +166,9 @@ app({
 				{state.previousScore}
 			</h5>
 
-			<div style={{ display: state.currentRound.currentPitch ? 'block' : 'none' }}>
+			<div style={{ display: state.hasActiveRound ? 'block' : 'none' }}>
 
-				<h3>{state.currentRound.currentQuestion}</h3>
+				<h3>{state.activeRound.currentQuestion}</h3>
 
 				<button onclick={actions.playCurrentPitch}>Repeat Note</button>
 
@@ -152,25 +176,43 @@ app({
 
 				<hr />
 
-				Correct: {state.currentRound.numCorrect} - Incorrect: {state.currentRound.numIncorrect}
+				Correct: {state.activeRound.numCorrect} - Incorrect: {state.activeRound.numIncorrect}
 
 				<hr />
 
 			</div>
 
-			<button onclick={actions.startRound}>{state.currentRound.currentPitch ? 'Reset' : 'Start'} Round</button>
+			<button onclick={actions.startRound}>{state.hasActiveRound ? 'Reset' : 'Start'} Round</button>
 		</main>,
+
+	events: {
+		load(state, actions) {
+			// Load up the default instrument
+			let sprite = AUDIO_SPRITES[state.instrument]
+			loadAudioSprite(sprite)
+		}
+	},
+
 	actions: {
+		setInstrument: (state, actions, instrument) => {
+			state.instrument = instrument
+
+			let sprite = AUDIO_SPRITES[instrument]
+			loadAudioSprite(sprite)
+
+			playChord(['C', 'E', 'G', 'Bb'])
+		},
+
 		// Create a clean state
 		resetRound: (state) => {
-			state.currentRound = {
-				currentQuestion: null,
-				currentPitch: null,
+			// TODO: do a deep clone of an empty round
+			state.activeRound = {
+				currentQuestion: null, // text shown to user
+				currentPitch: null, // "Bb"
 				numCorrect: 0,
 				numIncorrect: 0,
-				pitches: [],
-				responses: [],
-				previousRoundScore: null
+				pitches: [], // "F", "A", "D"
+				responses: [], // "F", "G#"
 			}
 			return state
 		},
@@ -181,23 +223,24 @@ app({
 			actions.resetRound()
 
 			// Choose random pitches to be used for this round
-			while (state.currentRound.pitches.length < PITCHES_PER_ROUND) {
+			while (state.activeRound.pitches.length < PITCHES_PER_ROUND) {
 				let pitch = PITCHES[Math.floor(Math.random() * PITCHES.length)]
-				if (state.currentRound.pitches.indexOf(pitch) === -1) {
-					state.currentRound.pitches.push(pitch)
+				if (state.activeRound.pitches.indexOf(pitch) === -1) {
+					state.activeRound.pitches.push(pitch)
 				}
 			}
-
+			state.hasActiveRound = true
 			actions.advance(state)
+			return state
 		},
 
 		// Ask the next question
 		advance: (state, actions) => {
-			let nextPitch = state.currentRound.pitches[state.currentRound.responses.length]
+			let nextPitch = state.activeRound.pitches[state.activeRound.responses.length]
 			if (nextPitch) {
-				let num = state.currentRound.responses.length + 1
-				state.currentRound.currentPitch = nextPitch
-				state.currentRound.currentQuestion = `Question ${num}: Can you click ${nextPitch}?`
+				let num = state.activeRound.responses.length + 1
+				state.activeRound.currentPitch = nextPitch
+				state.activeRound.currentQuestion = `Question ${num}: Can you click ${nextPitch}?`
 				actions.playCurrentPitch()
 				return state
 			}
@@ -207,31 +250,31 @@ app({
 
 		// Finish up the round
 		endRound: (state, actions) => {
-			state.previousScore = `Your score is ${state.currentRound.numCorrect} / ${state.currentRound.pitches.length}`
+			state.previousScore = `Your score is ${state.activeRound.numCorrect} / ${state.activeRound.pitches.length}`
 
-			let percentCorrect = (state.currentRound.numCorrect / state.currentRound.pitches.length) * 100
+			let percentCorrect = (state.activeRound.numCorrect / state.activeRound.pitches.length) * 100
 			let reaction = chooseReactionSample(percentCorrect)
 			reaction && playReaction(reaction)
 
-			actions.resetRound()
+			state.hasActiveRound = false
 			return state
 		},
 
 		// Play the pitch of the current question
 		playCurrentPitch: (state) => {
-			if (state.currentRound.currentPitch) {
-				playPitch(state.currentRound.currentPitch)
+			if (state.activeRound.currentPitch) {
+				playPitch(state.activeRound.currentPitch)
 			}
 		},
 
 		// Called when the user presses a note on the keyboard to
 		// indicate their answer
 		handleResponse: (state, actions, responsePitch) => {
-			state.currentRound.responses.push(responsePitch);
-			if (responsePitch == state.currentRound.currentPitch) {
-				state.currentRound.numCorrect++;
+			state.activeRound.responses.push(responsePitch)
+			if (responsePitch == state.activeRound.currentPitch) {
+				state.activeRound.numCorrect++
 			} else {
-				state.currentRound.numIncorrect++;
+				state.activeRound.numIncorrect++
 			}
 			return actions.advance(state)
 		}

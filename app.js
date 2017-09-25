@@ -3,11 +3,21 @@
 const { h, app } = hyperapp
 /** @jsx h */
 
+
+const PITCHES_PER_ROUND = 5
+
+const EMPTY_ROUND = {
+	currentQuestion: null, // text shown to user
+	currentPitch: null, // "Bb"
+	numCorrect: 0,
+	numIncorrect: 0,
+	pitches: [], // "F", "A", "D"
+	responses: [], // "F", "G#"
+}
+
 // Options shown on the keyboard and chosen within a round.
 // Must match the keys in AUDIO_SPRITES.x.sprite.
 const PITCHES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'G#', 'A', 'Bb', 'B']
-
-const PITCHES_PER_ROUND = 5
 
 // For now all sprites have identical length/timing
 const STANDARD_AUDIO_SPRITE = {
@@ -45,6 +55,7 @@ const AUDIO_SPRITES = {
 	}
 }
 
+// Cheers, etc. to be played at the end of a round
 const REACTION_SAMPLES = {
 	cheering: [
 		{ url: 'audio/freesoundeffects.com/cheer.mp3' }
@@ -140,11 +151,7 @@ app({
 	state: {
 		instrument: 'epiano',
 		previousScore: null,
-		activeRound: {
-			question: null,
-			numCorrect: 0,
-			numIncorrect: 0
-		},
+		activeRound: EMPTY_ROUND,
 		hasActiveRound: false
 	},
 	view: (state, actions) =>
@@ -205,15 +212,7 @@ app({
 
 		// Create a clean state
 		resetRound: (state) => {
-			// TODO: do a deep clone of an empty round
-			state.activeRound = {
-				currentQuestion: null, // text shown to user
-				currentPitch: null, // "Bb"
-				numCorrect: 0,
-				numIncorrect: 0,
-				pitches: [], // "F", "A", "D"
-				responses: [], // "F", "G#"
-			}
+			state.activeRound = _.cloneDeep(EMPTY_ROUND);
 			return state
 		},
 

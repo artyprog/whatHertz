@@ -38,18 +38,22 @@ const STANDARD_AUDIO_SPRITE = {
 // Played using the Howler audio library
 const AUDIO_SPRITES = {
 	'epiano': {
+		name: 'Electric Piano',
 		url: 'audio/sprites/epiano.mp3',
 		sprite: STANDARD_AUDIO_SPRITE,
 	},
 	'piano': {
+		name: 'Piano',
 		url: 'audio/sprites/piano.mp3',
 		sprite: STANDARD_AUDIO_SPRITE,
 	},
 	'bells': {
+		name: 'Bells',
 		url: 'audio/sprites/synth-bells.mp3',
 		sprite: STANDARD_AUDIO_SPRITE,
 	},
 	'strings': {
+		name: 'Strings',
 		url: 'audio/sprites/synth-strings.mp3',
 		sprite: STANDARD_AUDIO_SPRITE
 	}
@@ -130,11 +134,15 @@ let playURL = (url) => {
 	sound.play()
 }
 
-const InstrumentButtonWidget = ({ name, label, clickHandler }) =>
-	<button onclick={e => clickHandler(name)}>{label}</button>
+const InstrumentButtonWidget = ({ instrument, label, activeInstrument, clickHandler }) =>
+	<button
+		class={`mdl-button mdl-button--raised mdl-js-button mdl-js-ripple-effect ${instrument === activeInstrument ? 'mdl-button--accent' : ''}`}
+		onclick={e => clickHandler(instrument)}>
+		{label}
+	</button>
 
 const KeyboardWidget = ({ clickHandler }) =>
-	<svg xmlSpace="preserve" width="322px" height="240">
+	<svg id="keyboard" xmlSpace="preserve" width="322px" height="240">
 		{/* White keys */}
 		<rect style={{ fill: 'white', stroke: 'black' }} x="0" y="0" width="46" height="240" onclick={e => clickHandler('C')} />
 		<rect style={{ fill: 'white', stroke: 'black' }} x="46" y="0" width="46" height="240" onclick={e => clickHandler('D')} />
@@ -161,20 +169,21 @@ app({
 	},
 	view: (state, actions) =>
 		<main>
-			<h1>What Hertz?</h1>
+			<h2 style={{ display: state.hasActiveRound ? 'none' : 'block' }}>What Hertz?</h2>
+			<h5 style={{ display: state.hasActiveRound ? 'none' : 'block' }}>Name that pitch!</h5>
 
-			<div style={{ display: state.hasActiveRound ? 'none' : 'block' }}>
-				<hr />
-				<InstrumentButtonWidget name="epiano" label="Electric Piano" clickHandler={actions.setInstrument} />
-				<InstrumentButtonWidget name="piano" label="Piano" clickHandler={actions.setInstrument} />
-				<InstrumentButtonWidget name="bells" label="Syth Bells" clickHandler={actions.setInstrument} />
-				<InstrumentButtonWidget name="strings" label="Synth Strings" clickHandler={actions.setInstrument} />
-				<hr />
+			<div id="instruments" style={{ display: state.hasActiveRound ? 'none' : 'block' }}>
+				{Object.keys(AUDIO_SPRITES).map((instrument) =>
+					<InstrumentButtonWidget
+						instrument={instrument}
+						label={AUDIO_SPRITES[instrument].name}
+						activeInstrument={state.instrument}
+						clickHandler={actions.setInstrument}
+					/>
+				)}
 			</div>
 
-			<h5 style={{
-				display: state.previousScore ? 'block' : 'none'
-				}}>
+			<h5 style={{ display: state.previousScore ? 'block' : 'none' }}>
 				{state.previousScore}
 			</h5>
 
@@ -182,19 +191,27 @@ app({
 
 				<h3>{state.activeRound.currentQuestion}</h3>
 
-				<button onclick={actions.playCurrentPitch}>Repeat Note</button>
-
 				<KeyboardWidget clickHandler={actions.handleResponse} />
 
-				<hr />
-
-				Correct: {state.activeRound.numCorrect} - Incorrect: {state.activeRound.numIncorrect}
-
-				<hr />
+				<div id="score">
+					<span class="mdl-badge" data-badge={`${state.activeRound.numCorrect}`}>Correct</span>
+					&nbsp;&nbsp;
+					<span class="mdl-badge mdl-badge--no-background"
+						data-badge={`${state.activeRound.numIncorrect}`}>Incorrect</span>
+				</div>
 
 			</div>
 
-			<button onclick={actions.startRound}>{state.hasActiveRound ? 'Reset' : 'Start'} Round</button>
+			<div style={{ display: state.hasActiveRound ? 'none' : 'block' }}>
+				<button
+					class="mdl-button mdl-button--colored mdl-button--raised mdl-js-button mdl-js-ripple-effect"
+					onclick={actions.startRound}>
+					{state.previousScore ? 'Play Again' : "Let's Play!"}
+				</button>
+			</div>
+
+			</div>
+
 		</main>,
 
 	events: {
@@ -207,12 +224,13 @@ app({
 
 	actions: {
 		setInstrument: (state, actions, instrument) => {
-			state.instrument = instrument
+			state.instrument = instrument // "piano"
 
 			let sprite = AUDIO_SPRITES[instrument]
 			loadAudioSprite(sprite)
-
 			playChord(['C', 'E', 'G', 'Bb'])
+
+			return state
 		},
 
 		// Create a clean state
@@ -242,9 +260,10 @@ app({
 		advance: (state, actions) => {
 			let nextPitch = state.activeRound.pitches[state.activeRound.responses.length]
 			if (nextPitch) {
+				let numQuestions = state.activeRound.pitches.length
 				let num = state.activeRound.responses.length + 1
 				state.activeRound.currentPitch = nextPitch
-				state.activeRound.currentQuestion = `Question ${num}: Can you click ${nextPitch}?`
+				state.activeRound.currentQuestion = `Question ${num} of ${numQuestions}: Can you click ${nextPitch}?`
 				actions.playCurrentPitch()
 				return state
 			}
@@ -254,7 +273,7 @@ app({
 
 		// Finish up the round
 		endRound: (state, actions) => {
-			state.previousScore = `Your score is ${state.activeRound.numCorrect} / ${state.activeRound.pitches.length}`
+			state.previousScore = `You identified ${state.activeRound.numCorrect} ${state.activeRound.numCorrect === 1 ? 'pitch' : 'pitches'} correctly`
 
 			let percentCorrect = (state.activeRound.numCorrect / state.activeRound.pitches.length) * 100
 			let reaction = chooseRoundReactionSample(percentCorrect)

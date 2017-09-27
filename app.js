@@ -7,7 +7,6 @@ const { h, app } = hyperapp
 const PITCHES_PER_ROUND = 5
 
 const EMPTY_ROUND = {
-	currentQuestion: null, // text shown to user
 	currentPitch: null, // "Bb"
 	numCorrect: 0,
 	numIncorrect: 0,
@@ -87,7 +86,7 @@ const REACTION_SAMPLES = {
 let spritePlayer = null
 
 // Load the give audio sprite into the sprite player
-let loadAudioSprite = (sprite) => {
+const loadAudioSprite = (sprite) => {
 	spritePlayer = new Howl({
 		src: [sprite.url],
 		sprite: sprite.sprite
@@ -95,7 +94,7 @@ let loadAudioSprite = (sprite) => {
 }
 
 // Choose a reaction sample based on the % of questions answered correctly
-let chooseRoundReactionSample = (percentCorrect) => {
+const chooseRoundReactionSample = (percentCorrect) => {
 	let category
 	if (percentCorrect === 100) {
 		category = REACTION_SAMPLES.cheering
@@ -111,23 +110,23 @@ let chooseRoundReactionSample = (percentCorrect) => {
 }
 
 // Play one of the pitches loaded up in the sprite player
-let playPitch = (pitch) => {
+const playPitch = (pitch) => {
 	if (!spritePlayer) throw 'Invalid sprite player'
 	spritePlayer.play(pitch)
 }
 
 // Play multiple pitches at once
-let playChord = (pitches) => {
+const playChord = (pitches) => {
 	pitches.forEach(pitch => playPitch(pitch))
 }
 
 // Play a given reaction sample
-let playReaction = (reactionSample) => {
+const playReaction = (reactionSample) => {
 	playURL(reactionSample.url)
 }
 
 // Play an arbitrary audio file
-let playURL = (url) => {
+const playURL = (url) => {
 	let sound = new Howl({
 		src: [url]
 	})
@@ -189,7 +188,7 @@ app({
 
 			<div style={{ display: state.hasActiveRound ? 'block' : 'none' }}>
 
-				<h3>{state.activeRound.currentQuestion}</h3>
+				<h3 id="question">Pitch # {`${state.activeRound.responses.length + 1}`}</h3>
 
 				<KeyboardWidget clickHandler={actions.handleResponse} />
 
@@ -260,10 +259,7 @@ app({
 		advance: (state, actions) => {
 			let nextPitch = state.activeRound.pitches[state.activeRound.responses.length]
 			if (nextPitch) {
-				let numQuestions = state.activeRound.pitches.length
-				let num = state.activeRound.responses.length + 1
 				state.activeRound.currentPitch = nextPitch
-				state.activeRound.currentQuestion = `Question ${num} of ${numQuestions}: Can you click ${nextPitch}?`
 				actions.playCurrentPitch()
 				return state
 			}
@@ -297,11 +293,9 @@ app({
 
 			let reaction
 			if (responsePitch == state.activeRound.currentPitch) {
-				console.log('CORRECT')
 				reaction = REACTION_SAMPLES['correct'][0]
 				state.activeRound.numCorrect++
 			} else {
-				console.log('INCORRECT')
 				reaction = REACTION_SAMPLES['incorrect'][0]
 				state.activeRound.numIncorrect++
 			}
@@ -310,9 +304,7 @@ app({
 			// Wait a bit for the user to process whether their answer
 			// was correct or not before moving on.
       		return update => {
-      			setTimeout(() => {
-			return actions.advance(state)
-      			}, 1500)
+      			setTimeout(() => actions.advance(state), 1500)
       		}
 		}
 	}

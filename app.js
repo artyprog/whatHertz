@@ -120,6 +120,11 @@ const playChord = (pitches) => {
 	pitches.forEach(pitch => playPitch(pitch))
 }
 
+// Used to announce what the instrument sounds like
+const playIntroChord = () => {
+	playChord(['C', 'E', 'G', 'Bb'])
+}
+
 // Play a given reaction sample
 const playReaction = (reactionSample) => {
 	playURL(reactionSample.url)
@@ -135,28 +140,31 @@ const playURL = (url) => {
 
 const InstrumentButtonWidget = ({ instrument, label, activeInstrument, clickHandler }) =>
 	<button
-		class={`mdl-button mdl-button--raised mdl-js-button mdl-js-ripple-effect ${instrument === activeInstrument ? 'mdl-button--accent' : ''}`}
+		class={`pure-button ${instrument === activeInstrument && 'pure-button-active'}`}
 		onclick={e => clickHandler(instrument)}>
 		{label}
 	</button>
 
+const WhiteKeyStyle = { fill: 'white', stroke: 'black' }
+const BlackKeyStyle = { fill: 'black', stroke: 'black' }
+
 const KeyboardWidget = ({ clickHandler }) =>
 	<svg id="keyboard" xmlSpace="preserve" width="322px" height="240">
 		{/* White keys */}
-		<rect style={{ fill: 'white', stroke: 'black' }} x="0" y="0" width="46" height="240" onclick={e => clickHandler('C')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="46" y="0" width="46" height="240" onclick={e => clickHandler('D')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="92" y="0" width="46" height="240" onclick={e => clickHandler('E')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="138" y="0" width="46" height="240" onclick={e => clickHandler('F')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="184" y="0" width="46" height="240" onclick={e => clickHandler('G')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="230" y="0" width="46" height="240" onclick={e => clickHandler('A')} />
-		<rect style={{ fill: 'white', stroke: 'black' }} x="276" y="0" width="46" height="240" onclick={e => clickHandler('B')} />
+		<rect style={WhiteKeyStyle} x="0" y="0" width="46" height="240" onclick={e => clickHandler('C')} />
+		<rect style={WhiteKeyStyle} x="46" y="0" width="46" height="240" onclick={e => clickHandler('D')} />
+		<rect style={WhiteKeyStyle} x="92" y="0" width="46" height="240" onclick={e => clickHandler('E')} />
+		<rect style={WhiteKeyStyle} x="138" y="0" width="46" height="240" onclick={e => clickHandler('F')} />
+		<rect style={WhiteKeyStyle} x="184" y="0" width="46" height="240" onclick={e => clickHandler('G')} />
+		<rect style={WhiteKeyStyle} x="230" y="0" width="46" height="240" onclick={e => clickHandler('A')} />
+		<rect style={WhiteKeyStyle} x="276" y="0" width="46" height="240" onclick={e => clickHandler('B')} />
 
 		{/* Black keys */}
-		<rect style={{ fill: 'black', stroke: 'black' }} x="28.66666" y="0" width="26" height="160" onclick={e => clickHandler('C#')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="83.33332" y="0" width="26" height="160" onclick={e => clickHandler('Eb')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="164.5" y="0" width="26" height="160" onclick={e => clickHandler('F#')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="216.5" y="0" width="26" height="160" onclick={e => clickHandler('G#')} />
-		<rect style={{ fill: 'black', stroke: 'black' }} x="269.5" y="0" width="26" height="160" onclick={e => clickHandler('Bb')} />
+		<rect style={BlackKeyStyle} x="28.66666" y="0" width="26" height="160" onclick={e => clickHandler('C#')} />
+		<rect style={BlackKeyStyle} x="83.33332" y="0" width="26" height="160" onclick={e => clickHandler('Eb')} />
+		<rect style={BlackKeyStyle} x="164.5" y="0" width="26" height="160" onclick={e => clickHandler('F#')} />
+		<rect style={BlackKeyStyle} x="216.5" y="0" width="26" height="160" onclick={e => clickHandler('G#')} />
+		<rect style={BlackKeyStyle} x="269.5" y="0" width="26" height="160" onclick={e => clickHandler('Bb')} />
 	</svg>
 
 app({
@@ -168,10 +176,10 @@ app({
 	},
 	view: (state, actions) =>
 		<main>
-			<h2 style={{ display: state.hasActiveRound ? 'none' : 'block' }}>What Hertz?</h2>
-			<h5 style={{ display: state.hasActiveRound ? 'none' : 'block' }}>Name that pitch!</h5>
+			<h2 class={`${state.hasActiveRound && 'hidden'} space-above`}>What Hertz?</h2>
 
-			<div id="instruments" style={{ display: state.hasActiveRound ? 'none' : 'block' }}>
+			<div id="instruments" role="group"
+				class={`${state.hasActiveRound && 'hidden'} space-above space-below pure-button-group`}>
 				{Object.keys(AUDIO_SPRITES).map((instrument) =>
 					<InstrumentButtonWidget
 						instrument={instrument}
@@ -182,33 +190,30 @@ app({
 				)}
 			</div>
 
-			<h5 style={{ display: state.previousScore ? 'block' : 'none' }}>
+			<h3 id="previous-score" class={`${state.hasActiveRound && 'hidden'} space-below`}>
 				{state.previousScore}
-			</h5>
+			</h3>
 
-			<div style={{ display: state.hasActiveRound ? 'block' : 'none' }}>
-
-				<h3 id="question">Pitch # {`${state.activeRound.responses.length + 1}`}</h3>
+			<div class={`${!state.hasActiveRound && 'hidden'}`}>
+				<h3 id="question" class="space-below"
+					data-balloon={`Hint: the answer is ${state.activeRound.currentPitch}.`}
+					data-balloon-pos="down">
+					Pitch # {`${state.activeRound.responses.length + 1}`}
+				</h3>
 
 				<KeyboardWidget clickHandler={actions.handleResponse} />
 
-				<div id="score">
-					<span class="mdl-badge" data-badge={`${state.activeRound.numCorrect}`}>Correct</span>
-					&nbsp;&nbsp;
-					<span class="mdl-badge mdl-badge--no-background"
-						data-badge={`${state.activeRound.numIncorrect}`}>Incorrect</span>
+				<div id="score" class="space-above">
+					Correct: {state.activeRound.numCorrect} &bull; Incorrect: {state.activeRound.numIncorrect}
 				</div>
-
 			</div>
 
-			<div style={{ display: state.hasActiveRound ? 'none' : 'block' }}>
+			<div class={`${state.hasActiveRound && 'hidden'}`}>
 				<button
-					class="mdl-button mdl-button--colored mdl-button--raised mdl-js-button mdl-js-ripple-effect"
+					class="pure-button pure-button-primary button-xlarge"
 					onclick={actions.startRound}>
 					{state.previousScore ? 'Play Again' : "Let's Play!"}
 				</button>
-			</div>
-
 			</div>
 
 		</main>,
@@ -218,6 +223,7 @@ app({
 			// Load up the default instrument
 			let sprite = AUDIO_SPRITES[state.instrument]
 			loadAudioSprite(sprite)
+			playIntroChord()
 		}
 	},
 
@@ -263,13 +269,13 @@ app({
 				actions.playCurrentPitch()
 				return state
 			}
-
 			return actions.endRound(state)
 		},
 
 		// Finish up the round
 		endRound: (state, actions) => {
-			state.previousScore = `You identified ${state.activeRound.numCorrect} ${state.activeRound.numCorrect === 1 ? 'pitch' : 'pitches'} correctly`
+			state.previousScore = `You identified ${state.activeRound.numCorrect}
+									${state.activeRound.numCorrect === 1 ? 'pitch' : 'pitches'} correctly`
 
 			let percentCorrect = (state.activeRound.numCorrect / state.activeRound.pitches.length) * 100
 			let reaction = chooseRoundReactionSample(percentCorrect)

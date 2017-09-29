@@ -2,7 +2,7 @@ __whatHertz__ is a musical pitch identification game. A note is sounded and the 
 
 
 ## Demo
-[View demo](http://erikvorkink.com/whichHertz)
+[View demo](http://erikvorkink.com/whatHertz)
 
 
 ## TODO

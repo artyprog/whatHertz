@@ -168,6 +168,13 @@ const KeyboardWidget = ({ clickHandler }) =>
 	</svg>
 
 app({
+	init(state, actions) {
+		// Load up the default instrument
+		let sprite = AUDIO_SPRITES[state.instrument]
+		loadAudioSprite(sprite)
+		playIntroChord()
+	},
+
 	state: {
 		instrument: 'epiano',
 		previousScore: null,
@@ -217,15 +224,6 @@ app({
 			</div>
 
 		</main>,
-
-	events: {
-		load(state, actions) {
-			// Load up the default instrument
-			let sprite = AUDIO_SPRITES[state.instrument]
-			loadAudioSprite(sprite)
-			playIntroChord()
-		}
-	},
 
 	actions: {
 		setInstrument: (state, actions, instrument) => {
